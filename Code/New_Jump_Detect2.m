@@ -9,7 +9,7 @@
 close all; clear all; clc
 %% Initialization 
 % Define the Fourier modes
-nModes = 128;
+nModes = 64;
 fourModes = (-nModes:nModes).';
 k = (-nModes:nModes)';
 
@@ -48,13 +48,13 @@ cfe(length(cfe)) = 0;
 figure(1);
 plot(k,cfe,'r',k,cfp,'g',k,cfac_t,'b');
 title('Concentration Factors, N = 128'); grid on;
-legend('Exponential', 'Polynomial', 'Trigonometric')
+legend('Exponential', 'Polynomial', 'Trigonometric');
 %% Concentration factor definitions
 %We use the trigonometric/Gibbs concentration factor
 Sipi = 1.85193705198247;					% Value of Si(pi), the sine 
                                             %integral
 cfac_t = pi * sin(pi*abs(fourModes)/nModes)/Sipi;   
-sig1 = FinalConcDesign;
+sig = UpdatedConcDesign;
  
 cfac_1 = cfac_t;
 cfac_2 = sig;
@@ -62,7 +62,7 @@ cfac_3 = sig;
 cfac_4 = cfac_t;
 cfac_5 = sig;
 figure;
-plot(k,sig); title('Concentration Factor')
+plot(k,sig); title('Concentration Factor'); grid on; 
 
 %% Here we calculate the Fourier coefficients for a function, using a fine x-mesh.
 nPts = 256;
@@ -126,22 +126,22 @@ title('Nonlinear Underyling Function')
 %  plot(x,fx);
 
 %% Use this is you want to use the function from Aditya's thesis:
-fHat_1 =zeros(2*N+1,1);
-for a =1:2*N+1
-   fHat_1(a) = integral(@(FineX) 1.5.*exp(-1i.*k(a).*FineX),-.75*pi,-pi/2); 
-end
-
-fHat_2 =zeros(2*N+1,1);
-for a =1:2*N+1
-   fHat_2(a) = integral(@(FineX) (7./4 - .5*FineX + sin(FineX-.25)).*exp(-1i.*k(a).*FineX),-.25*pi,pi/8); 
-end
-
-fHat_3 =zeros(2*N+1,1);
-for a =1:2*N+1
-   fHat_3(a) = integral(@(FineX) (11.*FineX./4 - 5).*exp(-1i*k(a)*FineX),3*pi/8,3*pi/4); 
-end
-
-fx = (1.5 .*(x>-3*pi/4 & x<-pi/2)) + (7./4 - .5*FineX + sin(FineX-.25)).*(x>-pi/4 & x<pi/8) + (11.*FineX./4 - 5).*(x>3*pi/8 & x<3*pi/4);
+% fHat_1 =zeros(2*N+1,1);
+% for a =1:2*N+1
+%    fHat_1(a) = integral(@(FineX) 1.5.*exp(-1i.*k(a).*FineX),-.75*pi,-pi/2); 
+% end
+% 
+% fHat_2 =zeros(2*N+1,1);
+% for a =1:2*N+1
+%    fHat_2(a) = integral(@(FineX) (7./4 - .5*FineX + sin(FineX-.25)).*exp(-1i.*k(a).*FineX),-.25*pi,pi/8); 
+% end
+% 
+% fHat_3 =zeros(2*N+1,1);
+% for a =1:2*N+1
+%    fHat_3(a) = integral(@(FineX) (11.*FineX./4 - 5).*exp(-1i*k(a)*FineX),3*pi/8,3*pi/4); 
+% end
+% 
+% fx = (1.5 .*(x>-3*pi/4 & x<-pi/2)) + (7./4 - .5*FineX + sin(FineX-.25)).*(x>-pi/4 & x<pi/8) + (11.*FineX./4 - 5).*(x>3*pi/8 & x<3*pi/4);
 % fHat_1 = zeros(2*N+1,1);
 % for a = 1:2*N+1
 %     fHat_1(a) = integral(@(FineX) cos(3*FineX/2).*exp(-1i*k(a)*FineX),-pi/2,pi/2,'AbsTol',1e-12);
@@ -205,7 +205,7 @@ fourMat = exp(1i*FineX*fourModes.' );
 jmpFncCfs =  1i*fHat' .* sign(fourModes)' .* cfe';
 template =  fourMat*jmpFncCfs' ;
 figure; 
-plot(FineX,real( template));
+plot(FineX,real(template)); grid on; 
 %% Noise characteristics
 % We consider zero mean, additive white Gaussian nose of variance rho^2
 rho2 = 1/nModes^2;
@@ -313,7 +313,7 @@ for a = 1:length(FineX)
     
 end
 
-    Noise_jmpFncCfs = 1i*fHat' .* sign(fourModes)' .* cfe';
+    Noise_jmpFncCfs = 1i*fHat' .* sign(fourModes)' .* cfac_t';
     Noise_template =  fourMat*Noise_jmpFncCfs' ;
     jump_candidate = NaN(length(FineX),1);
     for a = 1:length(FineX)
@@ -321,8 +321,8 @@ end
         jump_candidate(a) = 1;
         end
     end
-    figure;
-    plot(FineX,jump_candidate); grid on;
+%     figure;
+%     plot(FineX,jump_candidate); grid on;
     
 for a = 7:length(FineX)-6
     if jump_candidate(a) == 1
@@ -374,7 +374,7 @@ jump_detect(length(FineX)-3) = NaN;
 
 
 figure;
-plot(FineX, fx, 'r', FineX, jump_detect, 'ko'); title('Detection of jumps for sawtooth function'); legend('f(x)', 'jump');
+plot(FineX, fx, 'k', FineX, jump_detect, 'ro'); title('Detection of jumps for sawtooth function'); legend('f(x)', 'jump');
 figure; 
 plot(FineX,test_stat_adv); grid on; 
 title('Difference in Test Stat')

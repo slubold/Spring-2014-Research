@@ -1,4 +1,4 @@
-
+function [sig] = UpdatedConcDesign
 %% Set up Fourier modes and physical mesh.
 % Clears all variables in the workspace and closes all open figures
 clear all; close all; clc
@@ -19,9 +19,8 @@ x = -pi + h*(0:nPts-1).';
 %% Define the function we are going to use to derive the new
 %  new concentration factors.
 
-% The template function comes from a Gram-Schmidt orhtonormalization of the
+% The template function comes from a Gram-Schmidt orthonormalization of the
 % basis {(x-pi),(x-pi)^3}, normalized to have a jump of 1 at x=0. 
-
 
 kern = exp(-1i*x*k);
 kern_2 = exp(1i*x*k); 
@@ -33,18 +32,18 @@ fx = (NC*((pi-x)/(sqrt(alpha)) + (pi-x).^3/(theta) - (beta/alpha)*(pi-x)/(theta)
 fx(129) = NaN;
 figure; 
 plot(x,fx); grid on;
-title('f(x),[-\pi,\pi]')
+title('f(x),[-\pi,\pi]');
 
 A = -(1i*pi.*k + exp(-1i*pi.*k) -1)./(k.^2); 
-A(65) = pi^2/2; A = (A*NC)/(sqrt(alpha)*2*pi);
+A(N+1) = pi^2/2; A = (A*NC)/(sqrt(alpha)*2*pi);
 B = (-1i.*pi.*k.*(-6 + pi.*k.*(pi.*k+3.*1i)) + 6.*exp(1i.*pi.*k)-6)./(k.^4);
-B(65) = pi^4/4; B = (NC * B)/(theta * 2*pi);
-C = -(1i*pi.*k + exp(-1i*pi.*k) -1)./(k.^2); C(65) = pi^2/2; C = (C*NC*beta)/(alpha*theta*2*pi);
+B(N+1) = pi^4/4; B = (NC * B)/(theta * 2*pi);
+C = -(1i*pi.*k + exp(-1i*pi.*k) -1)./(k.^2); C(N+1) = pi^2/2; C = (C*NC*beta)/(alpha*theta*2*pi);
 
-D = (-1i*pi.*k + exp(1i*pi.*k) -1)./(k.^2); D(65) = -(pi^2/2); D = (D*NC)/(sqrt(alpha)*2*pi);
+D = (-1i*pi.*k + exp(1i*pi.*k) -1)./(k.^2); D(N+1) = -(pi^2/2); D = (D*NC)/(sqrt(alpha)*2*pi);
 E = -(1i.*pi.*k.*(-6 + pi.*k.*(pi.*k-3.*1i)) + 6.*exp(1i.*pi.*k)-6)./(k.^4);
-E(65) = -(pi^4/4); E = (NC * E)/(theta * 2*pi);
-F = (-1i*pi.*k + exp(1i*pi.*k) -1)./(k.^2); F(65) = -(pi^2/2); F = (F*NC*beta)/(alpha*theta*2*pi);
+E(N+1) = -(pi^4/4); E = (NC * E)/(theta * 2*pi);
+F = (-1i*pi.*k + exp(1i*pi.*k) -1)./(k.^2); F(N+1) = -(pi^2/2); F = (F*NC*beta)/(alpha*theta*2*pi);
 
 fHat = A + B - C + D + E - F;
 Approx = real(fHat * kern'); 
@@ -74,4 +73,4 @@ cvx_end
 
 figure; plot(k,sig); grid on; title('Concentration Factor');
 figure; plot(x,real(K*sig)); grid on; title('Jump Approximation');
-
+end
